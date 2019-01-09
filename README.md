@@ -2,6 +2,7 @@
 
 Exposes per-account [OpenStack Swift](https://swift.openstack.org/) metrics to [Prometheus](https://prometheus.io/).
 
+So far this has only been tested against a Swift 1.13.1 cluster.
 
 # Deployment
 
@@ -12,9 +13,9 @@ Install prometheus_client:
 pip install prometheus_client
 ```
 
-prometheus-swift-account-exporter must run on a machine with a current copy of
-the Swift rings, and with access to the Swift storage nodes.  A swift-proxy
-node will typically fit the bill.
+prometheus-swift-account-exporter must run on a machine that has an
+always-current copy of the Swift rings, and with access to the Swift
+storage nodes.  A swift-proxy node will typically fit the bill.
 
 ## Installation
 
@@ -44,10 +45,4 @@ Or to run interactively:
 
 # Configuration
 
-Configuration options are documented in prometheus-swift-account-exporter.yaml shipped with this project
-
-# FAQ
-
-## Why hardcode swift host list?
-
-There is no way to retrieve swift hosts using API.
+Configuration options are documented in prometheus-swift-account-exporter.yaml shipped with this project.
