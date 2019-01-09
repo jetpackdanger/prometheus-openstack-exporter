@@ -32,6 +32,11 @@ from BaseHTTPServer import HTTPServer
 from SocketServer import ForkingMixIn
 from prometheus_client import CollectorRegistry, generate_latest, Gauge, CONTENT_TYPE_LATEST
 
+import random
+import swift.common.utils
+
+from swift.common.ring import ring
+
 import logging
 import logging.handlers
 
@@ -41,11 +46,61 @@ log = logging.getLogger('psae-logger')
 class Swift():
     def __init__(self):
         self.registry = CollectorRegistry()
-        self.baseurl = 'http://{{}}:{}/recon/{{}}'.format(config.get('swift_port','6000'))
-        self.swift_hosts = config.get('swift_hosts', [])
+
+        self.hash_path_prefix = config.get('hash_path_prefix', None)
+        if self.hash_path_prefix:
+            swift.common.utils.HASH_PATH_PREFIX = self.hash_path_prefix
+        self.hash_path_suffix = config.get('hash_path_suffix', None)
+        if self.hash_path_suffix:
+            swift.common.utils.HASH_PATH_SUFFIX = self.hash_path_suffix
+
+        self.keystone_tenants_map = self._read_keystone_tenants_map(
+            config['keystone_tenants_map'])
+        self.reseller_prefix = config['reseller_prefix']
+        self.ring_path = config['ring_path']
+
+        self.account_ring = self._get_account_ring()
+
+    def _read_keystone_tenants_map(self, map_path):
+        m = {}
+        with open(map_path) as km:
+            line = km.readline()
+            while line != '':
+                name, id = line.strip().split()
+                m[name] = id
+                line = km.readline()
+
+        return m
+
+    def _get_account_ring(self):
+        """Read the account ring from the configured location, and return it."""
+        return ring.Ring(
+            serialized_path=self.ring_path,
+            ring_name='account',
+            )
+
+    def _get_account_usage(self, account):
+        partition, nodes = self.account_ring.get_nodes(account=account)
+        node = random.choice(nodes)
+        account_url = 'http://{ip}:{port}/{device}/{partition}/{account}'.format(
+            account=account,
+            partition=partition,
+            **node)
+        response = requests.head(account_url)
+        if response.status_code == 204:
+            return int(response.headers['X-Account-Bytes-Used'])
+        else:
+            return 0
 
     def gen_account_stats(self):
-        pass
+        labels = ['cloud', 'swift_account', 'keystone_tenant_name', 'keystone_tenant_id']
+        swift_account = Gauge(
+            'swift_account_bytes_used', 'Swift account usage in bytes', labels, registry=self.registry)
+        for tenant_name, tenant_id in self.keystone_tenants_map.iteritems():
+            account = self.reseller_prefix + tenant_id
+            bytes_used = self._get_account_usage(account)
+
+            swift_account.labels(config['cloud'], account, tenant_name, tenant_id).set(bytes_used)
 
     def get_stats(self):
         self.gen_account_stats()
@@ -71,7 +126,7 @@ class OpenstackSwiftExporterHandler(BaseHTTPRequestHandler):
                 self.send_header('Content-Type', CONTENT_TYPE_LATEST)
                 self.end_headers()
                 self.wfile.write(output)
-            except:
+            except:  # noqa: E722
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(traceback.format_exc())
