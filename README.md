@@ -4,9 +4,27 @@ Exposes per-account [OpenStack Swift](https://swift.openstack.org/) metrics to [
 
 So far this has only been tested against a Swift 1.13.1 cluster.
 
-# Deployment
+## How does this work?
 
-## Requirements
+Fairly simply!  Given a copy of the Swift rings (in fact, we just need
+account.ring.gz) we can load this up and then ask it where particular
+accounts are located in the cluster.  We assume that Swift is
+replicating properly, pick a node at random, and ask it for the
+account's statistics with an HTTP HEAD request, which it returns.
+
+## How hard would it be to export usage by container?
+
+Sending a GET request to the account URL yields a list of containers
+(probably paginated, so watch out for that!).  In order to write a
+container-exporter, one could add some code to fetch a list of
+containers from the account server, load up the container ring, and
+then use container_ring.get_nodes(account, container) and HTTP HEAD on
+one of the resulting nodes to get a containers' statistics, although
+without some caching cleverness this will scale poorly.
+
+## Deployment
+
+### Requirements
 
 Install prometheus_client:
 ```
@@ -17,7 +35,7 @@ prometheus-swift-account-exporter must run on a machine that has an
 always-current copy of the Swift rings, and with access to the Swift
 storage nodes.  A swift-proxy node will typically fit the bill.
 
-## Installation
+### Installation
 
 ```
 # Copy example config in place, edit to your needs
@@ -43,6 +61,6 @@ Or to run interactively:
 
 ```
 
-# Configuration
+## Configuration
 
 Configuration options are documented in prometheus-swift-account-exporter.yaml shipped with this project.
