@@ -54,8 +54,6 @@ class Swift():
         if self.hash_path_suffix:
             swift.common.utils.HASH_PATH_SUFFIX = self.hash_path_suffix
 
-        self.keystone_tenants_map = self._read_keystone_tenants_map(
-            config['keystone_tenants_map'])
         self.reseller_prefix = config['reseller_prefix']
         self.ring_path = config['ring_path']
 
@@ -93,6 +91,8 @@ class Swift():
             return 0
 
     def gen_account_stats(self):
+        self.keystone_tenants_map = self._read_keystone_tenants_map(
+            config['keystone_tenants_map'])
         labels = ['cloud', 'swift_account', 'keystone_tenant_name', 'keystone_tenant_id']
         swift_account = Gauge(
             'swift_account_bytes_used', 'Swift account usage in bytes', labels, registry=self.registry)
