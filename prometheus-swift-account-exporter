@@ -2,10 +2,11 @@
 """
 OpenStack Swift exporter for the prometheus monitoring system
 
-Copyright (C) 2016 Canonical, Ltd.
+Copyright (C) 2016-2019 Canonical, Ltd.
 Authors:
   Jacek Nykis <jacek.nykis@canonical.com>
   Laurent Sesques <laurent.sesques@canonical.com>
+  Paul Collins <paul.collins@canonical.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License version 3,
@@ -34,7 +35,7 @@ from prometheus_client import CollectorRegistry, generate_latest, Gauge, CONTENT
 import logging
 import logging.handlers
 
-log = logging.getLogger('poe-logger')
+log = logging.getLogger('psae-logger')
 
 
 class Swift():
@@ -43,85 +44,11 @@ class Swift():
         self.baseurl = 'http://{{}}:{}/recon/{{}}'.format(config.get('swift_port','6000'))
         self.swift_hosts = config.get('swift_hosts', [])
 
-    def gen_up_stats(self):
-        labels = ['cloud', 'hostname']
-        swift_up = Gauge('swift_host_up', 'Swift host reachability',
-                         labels, registry=self.registry)
-        for h in self.swift_hosts:
-            try:
-                requests.get(self.baseurl.format(h, 'diskusage'))
-                swift_up.labels(config['cloud'], h).set(1)
-            except requests.exceptions.RequestException:
-                swift_up.labels(config['cloud'], h).set(0)
-
-    def gen_disk_usage_stats(self):
-        labels = ['cloud', 'hostname', 'device', 'type']
-        swift_disk = Gauge('swift_disk_usage_bytes', 'Swift disk usage in bytes',
-                           labels, registry=self.registry)
-        for h in self.swift_hosts:
-            try:
-                r = requests.get(self.baseurl.format(h, 'diskusage'))
-            except requests.exceptions.RequestException:
-                continue
-            for disk in r.json():
-                if not all([disk.get(i, False) for i in ['size', 'used', 'device']]):
-                    continue
-                swift_disk.labels(config['cloud'], h, disk['device'], 'size').set(int(disk['size']))
-                swift_disk.labels(config['cloud'], h, disk['device'], 'used').set(int(disk['used']))
-
-    def gen_quarantine_stats(self):
-        labels = ['cloud', 'hostname', 'ring']
-        swift_quarantine = Gauge('swift_quarantined_objects', 'Number of quarantined objects',
-                                 labels, registry=self.registry)
-        for h in self.swift_hosts:
-            try:
-                r = requests.get(self.baseurl.format(h, 'quarantined'))
-            except requests.exceptions.RequestException:
-                continue
-            for ring in ['accounts', 'objects', 'containers']:
-                swift_quarantine.labels(config['cloud'], h, ring).set(r.json().get(ring))
-
-    def gen_replication_stats(self):
-        labels = ['cloud', 'hostname', 'ring', 'type']
-        swift_repl = Gauge('swift_replication_stats', 'Swift replication stats', labels, registry=self.registry)
-        labels = ['cloud', 'hostname', 'ring']
-        swift_repl_duration = Gauge('swift_replication_duration_seconds', 'Swift replication duration in seconds',
-                                    labels, registry=self.registry)
-        for h in self.swift_hosts:
-            metrics = ['attempted', 'diff', 'diff_capped', 'empty',
-                       'failure', 'hashmatch', 'no_change', 'remote_merge',
-                       'remove', 'rsync', 'success', 'ts_repl']
-            # Object replication is special
-            try:
-                r = requests.get(self.baseurl.format(h, 'replication/object'))
-            except requests.exceptions.RequestException:
-                continue
-            try:
-                swift_repl_duration.labels(config['cloud'], h, 'object').set(r.json()['object_replication_time'])
-            except TypeError:
-                print(traceback.format_exc())
-
-            for ring in ['account', 'container']:
-                try:
-                    r = requests.get(self.baseurl.format(h, 'replication/' + ring))
-                except requests.exceptions.RequestException:
-                    continue
-                try:
-                    swift_repl_duration.labels(config['cloud'], h, ring).set(r.json()['replication_time'])
-                except TypeError:
-                    print(traceback.format_exc())
-
-                for metric in metrics:
-                    try:
-                        swift_repl.labels(config['cloud'], h, ring, metric).set(r.json()['replication_stats'][metric])
-                    except TypeError:
-                        print(traceback.format_exc())
+    def gen_account_stats(self):
+        pass
 
     def get_stats(self):
-        self.gen_up_stats()
-        self.gen_disk_usage_stats()
-        self.gen_quarantine_stats()
-        self.gen_replication_stats()
+        self.gen_account_stats()
         return generate_latest(self.registry)
 
 
