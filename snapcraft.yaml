@@ -1,4 +1,4 @@
-name: prometheus-swift-exporter
+name: prometheus-swift-account-exporter
 version: 0.0.8
 summary: Exposes high level OpenStack Swift metrics to Prometheus.
 description: |
@@ -7,12 +7,12 @@ description: |
 confinement: strict
 grade: stable
 apps:
-  prometheus-swift-exporter:
-    command: 'bin/prometheus-swift-exporter.wrapper'
+  prometheus-swift-account-exporter:
+    command: 'bin/prometheus-swift-account-exporter.wrapper'
     plugs: [network-bind, network]
     daemon: simple
 parts:
-  prometheus-swift-exporter:
+  prometheus-swift-account-exporter:
     plugin: python
     python-version: python2
     source: .
@@ -22,13 +22,13 @@ parts:
     plugin: dump
     source: .
     organize:
-      prometheus-swift-exporter.yaml: etc/prometheus/prometheus-swift-exporter.yaml.example
+      prometheus-swift-account-exporter.yaml: etc/prometheus/prometheus-swift-account-exporter.yaml.example
     prime:
-      - etc/prometheus/prometheus-swift-exporter.yaml.example
+      - etc/prometheus/prometheus-swift-account-exporter.yaml.example
   snap-wrappers:
     plugin: dump
     source: .
     organize:
-      snap_cmd_wrapper: bin/prometheus-swift-exporter.wrapper
+      snap_cmd_wrapper: bin/prometheus-swift-account-exporter.wrapper
     prime:
-      - bin/prometheus-swift-exporter.wrapper
+      - bin/prometheus-swift-account-exporter.wrapper

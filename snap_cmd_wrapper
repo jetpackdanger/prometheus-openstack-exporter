@@ -3,5 +3,5 @@
 # Fail if these vars are not present (e.g. from direct wrapper runs)
 : ${SNAP?} ${SNAP_DATA?}
 # Copy only if not existing
-cp -pn $SNAP/etc/prometheus/prometheus-swift-exporter.yaml.example $SNAP_DATA/prometheus-swift-exporter.yaml
-exec $SNAP/bin/prometheus-swift-exporter $SNAP_DATA/prometheus-swift-exporter.yaml
+cp -pn $SNAP/etc/prometheus/prometheus-swift-account-exporter.yaml.example $SNAP_DATA/prometheus-swift-account-exporter.yaml
+exec $SNAP/bin/prometheus-swift-account-exporter $SNAP_DATA/prometheus-swift-account-exporter.yaml
