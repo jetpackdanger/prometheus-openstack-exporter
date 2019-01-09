@@ -8,7 +8,7 @@ cloud: mycloud
 # There is no API to ask Swift for a list of accounts it knows about.
 # Even if there were, Swift (in common case of Keystone auth, at
 # least) only knows them by the corresponding tenant ID, which would
-# be a less than useful label with post-processing.  The following
+# be a less than useful label without post-processing.  The following
 # should point to a file containing one line per tenant, with the
 # tenant name first, then whitespace, followed by the tenant ID.
 keystone_tenants_map: 
@@ -22,10 +22,10 @@ reseller_prefix: AUTH_
 ring_path: /etc/swift
 
 # These will typically be read from /etc/swift/swift.conf.  If that
-# file cannot be opened, then the Swift library will log and error and
-# exit.  To run p-s-a-e as a user other than Swift, the following
-# settings must be set to the same values as the running Swift, and
-# the value above must point to a readable copy of the current rings.
+# file cannot be opened, then the Swift library will log an error and
+# try to exit.  To run p-s-a-e as a user other than Swift, these
+# settings must be set to the same values as Swift itself, and the
+# above must point to an always-current readable copy of the rings.
 
 hash_path_prefix:
 hash_path_suffix:
