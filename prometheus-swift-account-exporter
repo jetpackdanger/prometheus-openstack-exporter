@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-OpenStack Swift exporter for the prometheus monitoring system
+OpenStack Swift account exporter for the prometheus monitoring system
 
 Copyright (C) 2016-2019 Canonical, Ltd.
 Authors:
@@ -111,7 +111,7 @@ class ForkingHTTPServer(ForkingMixIn, HTTPServer):
     pass
 
 
-class OpenstackSwiftExporterHandler(BaseHTTPRequestHandler):
+class OpenstackSwiftAccountExporterHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
 
@@ -134,9 +134,9 @@ class OpenstackSwiftExporterHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.end_headers()
             self.wfile.write("""<html>
-            <head><title>OpenStack Swift Exporter</title></head>
+            <head><title>OpenStack Swift Account Exporter</title></head>
             <body>
-            <h1>OpenStack Swift Exporter</h1>
+            <h1>OpenStack Swift Account Exporter</h1>
             <p>Visit <code>/metrics</code> to use.</p>
             </body>
             </html>""")
@@ -146,12 +146,12 @@ class OpenstackSwiftExporterHandler(BaseHTTPRequestHandler):
 
 
 def handler(*args, **kwargs):
-    OpenstackSwiftExporterHandler(*args, **kwargs)
+    OpenstackSwiftAccountExporterHandler(*args, **kwargs)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage=__doc__,
-                                     description='Prometheus OpenStack Swift exporter',
+                                     description='Prometheus OpenStack Swift account exporter',
                                      formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('config_file', nargs='?',
                         help='Configuration file path',
