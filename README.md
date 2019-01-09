@@ -1,6 +1,6 @@
-# Prometheus OpenStack exporter
+# Prometheus Swift account exporter
 
-Exposes high level [OpenStack](http://www.openstack.org/) metrics to [Prometheus](https://prometheus.io/).
+Exposes per-account [OpenStack Swift](https://swift.openstack.org/) metrics to [Prometheus](https://prometheus.io/).
 
 
 # Deployment
@@ -12,38 +12,42 @@ Install prometheus_client:
 pip install prometheus_client
 ```
 
+prometheus-swift-account-exporter must run on a machine with a current copy of
+the Swift rings, and with access to the Swift storage nodes.  A swift-proxy
+node will typically fit the bill.
+
 ## Installation
 
 ```
 # Copy example config in place, edit to your needs
-sudo cp prometheus-swift-exporter.yaml /etc/prometheus/
+sudo cp prometheus-swift-account-exporter.yaml /etc/prometheus/
 
 ## Systemd
 # Install job
-sudo cp prometheus-swift-exporter.service /etc/systemd/system/
+sudo cp prometheus-swift-account-exporter.service /etc/systemd/system/
 
 
 # create default config location
-sudo sh -c 'echo "CONFIG_FILE=/etc/prometheus-swift-exporter/prometheus-swift-exporter.yaml">/etc/default/prometheus-swift-exporter'
+sudo sh -c 'echo "CONFIG_FILE=/etc/prometheus-swift-account-exporter/prometheus-swift-account-exporter.yaml">/etc/default/prometheus-swift-account-exporter'
 
 
 # Start
-sudo start prometheus-swift-exporter
+sudo start prometheus-swift-account-exporter
 ```
 
 Or to run interactively:
 
 ```
-./prometheus-swift-exporter prometheus-swift-exporter.yaml
+./prometheus-swift-account-exporter prometheus-swift-account-exporter.yaml
 
 ```
 
 # Configuration
 
-Configuration options are documented in prometheus-swift-exporter.yaml shipped with this project
+Configuration options are documented in prometheus-swift-account-exporter.yaml shipped with this project
 
 # FAQ
 
 ## Why hardcode swift host list?
 
-Same as above, there is no way to retrieve swift hosts using API.
+There is no way to retrieve swift hosts using API.
